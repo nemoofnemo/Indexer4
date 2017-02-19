@@ -1,0 +1,21 @@
+1.main page
+<a href="/video/online\.html" title=".*?(\d+)" target="_blank">.*?<em>(\d+)</em></a>
+<a href="/video/online\.html" title="[\u4e00-\u9fa5]*?.*?(\d+)" target="_blank">.*?<em>(\d+)</em></a>
+
+<div class="index-online">
+	<span class="web-online"><a href="/video/online.html" title="在线观看：993723" target="_blank">在线人数：<em>893294</em></a></span><i class="s-line"></i><span class="new-video"><a href="/newlist.html" target="_blank">最新投稿：<em>--</em></a></span>
+</div>
+
+2.online page
+<div class="ebox" typeid=".*?"><a href="(.*?)" title="(.*?)" target="_blank"><img src="(.*?)"/><p class="etitle">(.*?)</p></a><div class="dlo"><span class="play"><i class="b-icon b-icon-v-play"></i>(.*?)</span><span class="dm"><i class="b-icon b-icon-v-dm"></i>(.*?)</span><span class="author">(.*?)</span></div><p class="ol"><b>(.*?)</b>.*?</p></div>
+
+<div class="ebox" typeid="33"><a href="/video/av8695415/" title="【2月】龙的牙医 前篇【独家正版】" target="_blank"><img src="http://i1.hdslb.com/bfs/archive/3b39aa2ca5fe2deb9fffc86b2e74c20305d93ee9.jpg"/><p class="etitle">【2月】龙的牙医 前篇【独家正版】</p></a><div class="dlo"><span class="play"><i class="b-icon b-icon-v-play"></i>146895</span><span class="dm"><i class="b-icon b-icon-v-dm"></i>4308</span><span class="author">哔哩哔哩番剧</span></div><p class="ol"><b>4995</b>在线</p></div>
+
+Group 1:	/video/av8695415/	 15248	    17
+Group 2:	【2月】龙的牙医 前篇【独家正版】	 15274	    32
+Group 3:	http://i1.hdslb.com/bfs/archive/3b39aa2ca5fe2deb9fffc86b2e74c20305d93ee9.jpg	 15334	    76
+Group 4:	【2月】龙的牙医 前篇【独家正版】	 15431	    32
+Group 5:	146895	 15543	     6
+Group 6:	4308	 15607	     4
+Group 7:	哔哩哔哩番剧	 15639	    12
+Group 8:	4995
