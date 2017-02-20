@@ -72,11 +72,19 @@ def processVideoPage(conn, uri):
         data = gzdecode(data)
     data = unicode(data, 'utf-8')
     #second, parse data by regex exp
-    
-    return (response, data)
+    pattern = re.compile(R'<meta name="keywords" content="(.*?)" />.*?<meta name="description" content="(.*?)" />.*?<meta name="author" content="(.*?)" />', re.M | re.S)
+    ret1 = pattern.search(data)   
+    retData1 = () 
+    if ret1:
+        retData1 = ret1.groups()
+    pattern = re.compile(R'"tminfo" xmlns:v="//rdf\.data-vocabulary\.org/#".*?<a href="(.*?)".*?>(.*?)</a>.*?<a href=\'(.*?)\'.*?>(.*?)</a>.*?<a href="(.*?)".*?>(.*?)</a>', re.M | re.S)
+    ret2 = pattern.search(data)
+    retData2 = ()
+    if ret2:
+        retData2 = ret2.groups()
+    return (retData1, retData2)
 
 def processOnlinePageList(listArg):
     conn = httplib.HTTPConnection('www.bilibili.com')
-    for item in listArg:
-        data
+    print processVideoPage(conn, '/video/av8680746/')   
     conn.close()

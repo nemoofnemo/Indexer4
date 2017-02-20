@@ -11,3 +11,4 @@ else:
     print 'program is not a module.'
     exit()
 
+Transmission.processOnlinePageList(None)
