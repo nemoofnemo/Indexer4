@@ -7,6 +7,7 @@ import re
 import time
 import os
 import codecs 
+import json
 
 if __name__ == '__main__':
     print 'transmission module.'
@@ -52,6 +53,8 @@ def parseMainPage(data):
         return ret.groups()   
     else:
         return None
+
+
 
 #online page
 
@@ -148,10 +151,7 @@ def processVideoTag(conn, uri):
 #return list:
 #video page data, video tags
 def processOnlinePageList(listArg):
-    fp = codecs.open('text.txt', 'w+', 'utf-8')
-    ts = createTimeStamp()
-    print '[%s]:process online page list.' % ts
-    fp.write( ts + '\n')
+    fp = codecs.open('text.txt', 'a+', 'utf-8')
     conn1 = httplib.HTTPConnection('www.bilibili.com')
     conn2 = httplib.HTTPConnection('api.bilibili.com')
     print 'online list size: %d' % len(listArg)
@@ -160,7 +160,7 @@ def processOnlinePageList(listArg):
         videoTags = processVideoTag(conn2, item[0])
         #str = '%s :\n%s\n%s\n' % (item, videoPageData, videoTags)
         #item format: uri, tittle, online, other.
-        str1 = '[%s]:%s %s\n' % (item[0], item[1], item[7])
+        str1 = '[Video]:%s %s %s\n' % (item[0], item[1], item[7])
         for i in item[2:7]:
             str1 = str1 + '%s ' % (i)
         str1 = str1 + '\n'
@@ -185,7 +185,7 @@ def processOnlinePageList(listArg):
                 str3 = str3 + '%s %s %s %s\n' % (i[0], i[1], i[2], i[3])
         else:
             print 'cannot get video tags.'
-        s = str1 + str2 + str3 + '\n'
+        s = str1 + str2 + str3
         fp.write(s)
     conn2.close()
     conn1.close()
@@ -203,6 +203,104 @@ def processVideoData():
     else:
         print 'invalid onlinepage data'
 
+#lives
+
+#return list
+def getLiveList():
+    results = []
+    conn = None
+    try:
+        conn = httplib.HTTPConnection('live.bilibili.com')
+        conn.request('GET', 'http://live.bilibili.com/area/home?area=subject&order=online&cover=1', '', {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8','User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36','Referer':'http://www.bilibili.com/','Accept-Language':'zh-CN,zh;q=0.8', 'Accept-Encoding':'gzip'}) 
+        response = conn.getresponse()
+        data = response.read()
+        headers = response.getheaders()
+        if headers.count( ('Content-Encoding', 'gzip') ) == True :
+            data = gzdecode(data)
+        if headers.count( ('content-encoding', 'gzip') ) == True :
+            data = gzdecode(data)  
+        data = data.decode('raw_unicode_escape')
+        #get list
+        pattern = re.compile(R'{"roomid":(.*?),"short_id":(.*?),"uid":(.*?),"uname":"(.*?)",.*?"title":"(.*?)",.*?"online":(.*?),"area":(.*?),"areaName":"(.*?)","link":"(.*?)","stream_id":(.*?),.*?}', re.M | re.S)
+        results = pattern.findall(data)
+    except Exception , ex:
+        print ex
+    finally:
+        if conn:
+            conn.close()
+    return results
+
+def processLivePage(conn, uri):
+    results = None
+    try:      
+        conn.request('GET', '/' + uri , '', {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8','User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36','Referer':'http://www.bilibili.com/','Accept-Language':'zh-CN,zh;q=0.8', 'Accept-Encoding':'gzip'}) 
+        response = conn.getresponse()
+        data = response.read()
+        headers = response.getheaders()
+        if headers.count( ('Content-Encoding', 'gzip') ) == True :
+            data = gzdecode(data)
+        if headers.count( ('content-encoding', 'gzip') ) == True :
+            data = gzdecode(data)
+        data = unicode(data, 'utf-8')
+        #get data
+        pattern = re.compile(R'<meta name="keywords" content="(.*?)">.*?<meta name="description".*?content="(.*?)".*?>', re.DOTALL)
+        temp = pattern.search(data)
+        ret1 = ()
+        if temp:
+            ret1 = temp.groups()
+        pattern = re.compile(R'<div class="live-tag v-top" title=".*?">(.*?)</div>', re.M | re.S)
+        ret2 = pattern.findall(data)
+        results = (ret1, ret2)
+    except Exception , ex:
+        print ex
+    finally:
+        1
+    return results
+
+def processLiveList():
+    liveList = getLiveList()    
+    if len(liveList) > 0:
+        conn = None
+        try:
+            fp = codecs.open('text.txt', 'a+', 'utf-8')
+            conn = httplib.HTTPConnection('live.bilibili.com')
+            ret = None
+
+            for item in liveList:
+                if item[1] != u'0':
+                    ret = processLivePage(conn, item[1])
+                elif item[1] == u'0':
+                    ret = processLivePage(conn, item[0]) 
+                else:
+                    print 'invalid room id'
+                    continue
+
+                if ret == None:
+                    print 'invalid LivePage return value'
+                    continue
+
+                str1 = '[Live]:%s %s %s\n' % (item[0], item[1], item[7])    
+                for i in item:
+                    str1 = str1 + '%s ' % i
+                str1 = str1 + '\n'
+                if len(ret[0]) == 2:
+                    str1 = str1 + '%s\n%s' % (ret[0][0], ret[0][1])
+                str1 = str1 + '\n'
+                for i in ret[1]:
+                    str1 = str1 + '%s ' % i
+                str1 = str1 + '\n'
+                fp.write(str1)
+
+            conn.close()
+            fp.close()
+        except Exception, ex:
+            print ex
+        finally:
+            if conn:
+                conn.close()
+    else:
+        print 'cannot get live list.'
+    
 #main loop
 def mainLoop():
     while True:
