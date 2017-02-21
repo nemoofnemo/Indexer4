@@ -28,7 +28,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="data.txt" />
+    <Content Include="dataInfo.txt" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

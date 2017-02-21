@@ -149,7 +149,9 @@ def processVideoTag(conn, uri):
 #video page data, video tags
 def processOnlinePageList(listArg):
     fp = codecs.open('text.txt', 'w+', 'utf-8')
-    fp.write(createTimeStamp() + '\n')
+    ts = createTimeStamp()
+    print '[%s]:process online page list.' % ts
+    fp.write( ts + '\n')
     conn1 = httplib.HTTPConnection('www.bilibili.com')
     conn2 = httplib.HTTPConnection('api.bilibili.com')
     print 'online list size: %d' % len(listArg)
@@ -158,31 +160,32 @@ def processOnlinePageList(listArg):
         videoTags = processVideoTag(conn2, item[0])
         #str = '%s :\n%s\n%s\n' % (item, videoPageData, videoTags)
         #item format: uri, tittle, online, other.
-        str1 = u'[%s]:%s %s\n' % (item[0], item[1], item[7])
+        str1 = '[%s]:%s %s\n' % (item[0], item[1], item[7])
         for i in item[2:7]:
-            str1 = str1 + u'%s ' % (i)
-        str1 = str1 + u'\n'
+            str1 = str1 + '%s ' % (i)
+        str1 = str1 + '\n'
         #page data
         str2 = u'[Page]:\n'
-        if videoPageData:
+        if videoPageData and len(videoPageData[0]) == 0 and len(videoPageData[1]) == 0:
+            str2 = str2 + u'番剧\n' + item[3]+ '\n' + item[6] + '\n';
+            str2 = str2 + u'[Division]:' + u'/ 主页 / 番剧 / 番剧\n'
+        elif videoPageData:
             for i in videoPageData[0]:
-                str2 = str2 + u'%s\n' % (i)
-            str2 = str2 + u'division\n'
+                str2 = str2 + '%s\n' % (i)
+            str2 = str2 + '[Division]:'
             for i in videoPageData[1]:
-                str2 = str2 + u'%s ' % (i)
-            str2 = str2 + u'\n'
+                str2 = str2 + '%s ' % (i)
+            str2 = str2 + '\n'
         else:
             print u'cannot get video page data.'
         #tags format
-        str3 = u'[Tags]\n'
+        str3 = '[Tags]\n'
         if len(videoTags) > 0:            
             for i in videoTags:
-                str3 = str3 + u'%s %s %s %s\n' % (i[0], i[1], i[2], i[3])
+                str3 = str3 + '%s %s %s %s\n' % (i[0], i[1], i[2], i[3])
         else:
-            print u'cannot get video tags.'
-        s = str1 + str2 + str3 + u'\n'
-        #print s
-        fuck = isinstance(s, unicode)
+            print 'cannot get video tags.'
+        s = str1 + str2 + str3 + '\n'
         fp.write(s)
     conn2.close()
     conn1.close()
