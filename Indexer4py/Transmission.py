@@ -54,8 +54,6 @@ def parseMainPage(data):
     else:
         return None
 
-
-
 #online page
 
 def getOnlinePage():
@@ -303,5 +301,24 @@ def processLiveList():
     
 #main loop
 def mainLoop():
+    #clear data
+    fp = codecs.open('text.txt', 'w+', 'utf-8')
+    fp.close()
+    #start indexer
     while True:
+        timeStamp = createTimeStamp()
+        index = int(time.time())
+        print '[%s]: indexer start.Index = %d' % (timeStamp, index)
         data = getMainPage()
+        MainPageData = parseMainPage(data[1])
+        if MainPageData:
+            fp = codecs.open('text.txt', 'a+', 'utf-8')
+            temp = '[TimeStamp]:%s\n[Index]:%d\n[Online]:%s %s\n' % (timeStamp, index, MainPageData[0], MainPageData[1])
+            print temp
+            fp.write(temp)
+            fp.close()
+        else:
+            print 'cannot get main page data, abort operation.'
+            continue
+        
+        time.sleep(300)

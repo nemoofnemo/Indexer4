@@ -13,4 +13,4 @@ else:
     print 'program is not a module.'
     exit()
 
-Transmission.processLiveList()
+Transmission.mainLoop()
