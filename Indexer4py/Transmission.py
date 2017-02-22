@@ -152,7 +152,7 @@ def processOnlinePageList(listArg):
     fp = codecs.open('text.txt', 'a+', 'utf-8')
     conn1 = httplib.HTTPConnection('www.bilibili.com')
     conn2 = httplib.HTTPConnection('api.bilibili.com')
-    print 'online list size: %d' % len(listArg)
+    print '[Info]:online list size: %d' % len(listArg)
     for item in listArg:
         videoPageData = processVideoPage(conn1, item[0])
         videoTags = processVideoTag(conn2, item[0])
@@ -257,6 +257,7 @@ def processLivePage(conn, uri):
 
 def processLiveList():
     liveList = getLiveList()    
+    print '[Info]:live list size: %d' % len(liveList)
     if len(liveList) > 0:
         conn = None
         try:
@@ -320,5 +321,7 @@ def mainLoop():
         else:
             print 'cannot get main page data, abort operation.'
             continue
-        
+        processVideoData()
+        processLiveList()
+        print '[Indexer]: done.'
         time.sleep(300)
