@@ -8,6 +8,7 @@ import time
 import os
 import codecs 
 import json
+import sqlite3
 
 if __name__ == '__main__':
     print 'transmission module.'
@@ -148,48 +149,146 @@ def processVideoTag(conn, uri):
 
 #return list:
 #video page data, video tags
-def processOnlinePageList(listArg):
-    fp = codecs.open('text.txt', 'a+', 'utf-8')
-    conn1 = httplib.HTTPConnection('www.bilibili.com')
-    conn2 = httplib.HTTPConnection('api.bilibili.com')
-    print '[Info]:online list size: %d' % len(listArg)
-    for item in listArg:
-        videoPageData = processVideoPage(conn1, item[0])
-        videoTags = processVideoTag(conn2, item[0])
-        #str = '%s :\n%s\n%s\n' % (item, videoPageData, videoTags)
-        #item format: uri, tittle, online, other.
-        str1 = '[Video]:%s %s %s\n' % (item[0], item[1], item[7])
-        for i in item[2:7]:
-            str1 = str1 + '%s ' % (i)
-        str1 = str1 + '\n'
-        #page data
-        str2 = u'[Page]:\n'
-        if videoPageData and len(videoPageData[0]) == 0 and len(videoPageData[1]) == 0:
-            str2 = str2 + u'番剧\n' + item[3]+ '\n' + item[6] + '\n';
-            str2 = str2 + u'[Division]:' + u'/ 主页 / 番剧 / 番剧\n'
-        elif videoPageData:
-            for i in videoPageData[0]:
-                str2 = str2 + '%s\n' % (i)
-            str2 = str2 + '[Division]:'
-            for i in videoPageData[1]:
-                str2 = str2 + '%s ' % (i)
-            str2 = str2 + '\n'
-        else:
-            print u'cannot get video page data.'
-        #tags format
-        str3 = '[Tags]\n'
-        if len(videoTags) > 0:            
-            for i in videoTags:
-                str3 = str3 + '%s %s %s %s\n' % (i[0], i[1], i[2], i[3])
-        else:
-            print 'cannot get video tags.'
-        s = str1 + str2 + str3
-        fp.write(s)
-    conn2.close()
-    conn1.close()
-    fp.close()
 
-def processVideoData():
+def writeVideoDataToDB(dbconn, index, listitem, videoPageData, videoTags):
+    cu = None
+    try:
+        cu = dbconn.cursor()
+
+        cu.execute('select max(video_id) from video_table')
+        video_id = 1
+        ret = cu.fetchone()[0]
+        if ret:
+            video_id = ret + 1            
+
+        cu.execute('select max(keyword_id) from keyword_table')
+        keyword_id = 1
+        ret = cu.fetchone()[0]
+        if ret:
+            keyword_id = ret + 1
+
+        cu.execute('select max(division_id) from division_table')
+        division_id = 1
+        ret = cu.fetchone()[0]
+        if ret:
+            division_id = ret + 1
+
+        keyword_index = video_id
+        division_index = video_id
+        keywords = []
+        division = []
+
+        if videoPageData and len(videoPageData[0]) == 0 and len(videoPageData[1]) == 0:
+            desc = u'bilibili番剧'
+            keywords.append(u'番剧')
+            division = [u'http://bangumi.bilibili.com/22/',u'番剧',u'http://bangumi.bilibili.com/22/',u'番剧']
+        elif videoPageData:
+            desc = videoPageData[0][1]
+        else:
+            print 'invalid video pagedata in writeVideoDataToDB:1'
+            desc = u''        
+
+        #video table
+        cu.execute("insert into video_table values(%d,%d,'%s','%s','%s','%s',%s,%s,'%s',%s,%d,'%s',%d)" % (video_id, index, listitem[0],listitem[1],listitem[2],listitem[3],listitem[4],listitem[5],listitem[6],listitem[7],keyword_index,desc,division_index))
+        
+        #tags
+        try:
+            for i in videoTags:
+                keywords.append(i[1])
+                cu.execute('select tag_id from tag_table where tag_id = %s' % i[0])
+                if len(cu.fetchall()) == 0:
+                    cu.execute("insert into tag_table values(%s,'%s','%s',%s)" % (i[0],i[1],i[2],i[3]))
+        except Exception , ex:
+            #do nothing
+            1
+
+        #div    
+        if videoPageData and len(videoPageData[1]) != 0:
+            for i in videoPageData[1][2:]:
+                division.append(i)
+            if len(videoPageData[1]) == 6:
+                if videoPageData[1][3] not in keywords:
+                    keywords.append(videoPageData[1][3])
+                if videoPageData[1][5] not in keywords:
+                    keywords.append(videoPageData[1][5])
+        try:
+            cu.execute("insert into division_table values(%d,%d,'%s','%s','%s','%s')" % (division_id, division_index, division[0],division[1],division[2],division[3]))
+        except Exception , ex:
+            #do nothing
+            1        
+        
+        #keyword
+        if videoPageData and len(videoPageData[0]) == 3:
+            temp = videoPageData[0][0].split(u',')
+            for i in temp:
+                if i not in keywords:
+                    keywords.append(i)
+        try:
+            for i in keywords:
+                cu.execute("insert into keyword_table values(%d,%d,'%s')" % (keyword_id,keyword_index,i))
+                keyword_id = keyword_id + 1
+        except Exception , ex:
+            #do nothing
+            1
+    except Exception , ex:
+        print ex
+    finally:
+        if cu:
+            cu.close()
+
+
+def processOnlinePageList(listArg, dbconn, index):
+    fp =None
+    conn1 = None
+    conn2 = None
+    try:
+        fp = codecs.open('text.txt', 'a+', 'utf-8')
+        conn1 = httplib.HTTPConnection('www.bilibili.com')
+        conn2 = httplib.HTTPConnection('api.bilibili.com')
+        print '[Info]:online list size: %d' % len(listArg)
+
+        for item in listArg:
+            videoPageData = processVideoPage(conn1, item[0])
+            videoTags = processVideoTag(conn2, item[0])
+            #write to db
+            writeVideoDataToDB(dbconn, index, item, videoPageData, videoTags)
+            #write to file
+            str1 = '[Video]:%s %s %s\n' % (item[0], item[1], item[7])
+            for i in item[2:7]:
+                str1 = str1 + '%s ' % (i)
+            str1 = str1 + '\n'
+            #page data
+            str2 = u'[Page]:\n'
+            if videoPageData and len(videoPageData[0]) == 0 and len(videoPageData[1]) == 0:
+                str2 = str2 + u'番剧\n' + item[3]+ '\n' + item[6] + '\n';
+                str2 = str2 + u'[Division]:' + u'/ 主页 / 番剧 / 番剧\n'
+            elif videoPageData:
+                for i in videoPageData[0]:
+                    str2 = str2 + '%s\n' % (i)
+                str2 = str2 + '[Division]:'
+                for i in videoPageData[1]:
+                    str2 = str2 + '%s ' % (i)
+                str2 = str2 + '\n'
+            else:
+                print u'cannot get video page data.'
+            #tags format
+            str3 = '[Tags]\n'
+            if len(videoTags) > 0:            
+                for i in videoTags:
+                    str3 = str3 + '%s %s %s %s\n' % (i[0], i[1], i[2], i[3])
+            else:
+                print 'cannot get video tags.'
+            s = str1 + str2 + str3
+            fp.write(s)
+
+    except Exception , ex:
+        print ex
+    finally:
+        conn2.close()
+        conn1.close()
+        fp.close()
+
+def processVideoData(dbconn, index):
     onlinePage = getOnlinePage()
     onlinePageData = None
     if onlinePage:
@@ -197,7 +296,7 @@ def processVideoData():
     else:
         print 'can not get online page'
     if onlinePageData:
-        processOnlinePageList(onlinePageData)
+        processOnlinePageList(onlinePageData, dbconn, index)
     else:
         print 'invalid onlinepage data'
 
@@ -255,7 +354,69 @@ def processLivePage(conn, uri):
         1
     return results
 
-def processLiveList():
+def writeLiveDataToDB(dbconn, index, listitem, livePageData):
+    cu = None
+    try:
+        cu = dbconn.cursor()
+        
+        #warning: liveid = max videoid + 1
+        cu.execute('select max(video_id) from video_table')
+        live_id = 1
+        ret = cu.fetchone()[0]
+        if ret:
+            live_id = ret + 1
+
+        cu.execute('select max(live_tag_id) from live_tag_table')
+        live_tag_id = 1
+        ret = cu.fetchone()[0]
+        if ret:
+            live_tag_id = ret + 1
+
+        cu.execute('select max(keyword_id) from keyword_table')
+        keyword_id = 1
+        ret = cu.fetchone()[0]
+        if ret:
+            keyword_id = ret + 1
+
+        keyword_index = live_id
+        live_tag_index = live_id
+
+        keywords = []
+
+        #live table
+        cu.execute("insert into live_table values(%d,%d,%s,%s,%s,'%s','%s',%s,%s,'%s',%s,'%s',%d,%d)" % (live_id, index, listitem[0], listitem[1], listitem[2], listitem[3], listitem[4], listitem[5], listitem[6], listitem[7], listitem[8], listitem[9], keyword_index, live_tag_index))
+
+        #tags
+        try:
+            if livePageData:
+                for i in livePageData[1]:
+                    keywords.append(i)
+                    cu.execute("insert into live_tag_table values(%d, %d, '%s')" % (live_tag_id, live_tag_index, i))
+                    live_tag_id = live_tag_id + 1
+        except Exception , ex:
+            #do nothing
+            1
+
+        #division
+        if listitem[7] not in keywords:
+            keywords.append(listitem[7])        
+
+        #keywords
+        try:
+            for i in keywords:
+                cu.execute("insert into keyword_table values(%d,%d,'%s')" % (keyword_id,keyword_index,i))
+                keyword_id = keyword_id + 1
+        except Exception , ex:
+            #do nothing
+            1
+
+    except Exception , ex:
+        print ex
+    finally:
+        if cu:
+            cu.close()
+
+def processLiveList(dbconn, index):
     liveList = getLiveList()    
     print '[Info]:live list size: %d' % len(liveList)
     if len(liveList) > 0:
@@ -274,10 +435,13 @@ def processLiveList():
                     print 'invalid room id'
                     continue
 
+                #write to db
+                writeLiveDataToDB(dbconn, index, item, ret)
+
                 if ret == None:
                     print 'invalid LivePage return value'
                     continue
-
+                #write to file
                 str1 = '[Live]:%s %s %s\n' % (item[0], item[1], item[7])    
                 for i in item:
                     str1 = str1 + '%s ' % i
@@ -289,8 +453,6 @@ def processLiveList():
                     str1 = str1 + '%s ' % i
                 str1 = str1 + '\n'
                 fp.write(str1)
-
-            conn.close()
             fp.close()
         except Exception, ex:
             print ex
@@ -301,14 +463,30 @@ def processLiveList():
         print 'cannot get live list.'
     
 #main loop
+
+def writeMainTable(dbconn, index, timeStamp, playCount, onlineCount):
+    cu = None
+    try:
+        cu = dbconn.cursor()
+        cu.execute("insert into main_table values(%d,'%s',%s,%s)" % (index, timeStamp, playCount, onlineCount))
+        #dbconn.commit()
+    except Exception , ex:
+        print ex
+    finally:
+        if cu:
+            cu.close()
+
 def mainLoop():
     #clear data
     fp = codecs.open('text.txt', 'w+', 'utf-8')
     fp.close()
     #start indexer
     while True:
+        #get database
+        dbconn = sqlite3.connect('data.db')
         timeStamp = createTimeStamp()
         index = int(time.time())
+
         print '[%s]: indexer start.Index = %d' % (timeStamp, index)
         data = getMainPage()
         MainPageData = parseMainPage(data[1])
@@ -318,10 +496,17 @@ def mainLoop():
             print temp
             fp.write(temp)
             fp.close()
+            #write to db
+            writeMainTable(dbconn, index, timeStamp, MainPageData[0], MainPageData[1])            
         else:
             print 'cannot get main page data, abort operation.'
             continue
-        processVideoData()
-        processLiveList()
+
+        processVideoData(dbconn, index)
+        processLiveList(dbconn, index)
+        dbconn.commit()
         print '[Indexer]: done.'
+        dbconn.close()
+
+        break
         time.sleep(300)

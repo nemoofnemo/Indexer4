@@ -18,9 +18,8 @@ else:
 
 cx = sqlite3.connect('data.db')
 cu = cx.cursor()
-cu.execute("insert into test values(4, '%s')" % '你好')
-cx.commit()
-cu.execute('select * from test')
+cu.execute("insert into test values(7,'%s')" % u'\\asdf')
 print cu.fetchall()
+cx.commit()
 cu.close()
 cx.close()
