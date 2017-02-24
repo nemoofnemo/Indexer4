@@ -239,11 +239,10 @@ def writeVideoDataToDB(dbconn, index, listitem, videoPageData, videoTags):
 
 
 def processOnlinePageList(listArg, dbconn, index):
-    fp =None
     conn1 = None
     conn2 = None
     try:
-        fp = codecs.open('text.txt', 'a+', 'utf-8')
+        #fp = codecs.open('text.txt', 'a+', 'utf-8')
         conn1 = httplib.HTTPConnection('www.bilibili.com')
         conn2 = httplib.HTTPConnection('api.bilibili.com')
         print '[Info]:online list size: %d' % len(listArg)
@@ -253,41 +252,12 @@ def processOnlinePageList(listArg, dbconn, index):
             videoTags = processVideoTag(conn2, item[0])
             #write to db
             writeVideoDataToDB(dbconn, index, item, videoPageData, videoTags)
-            #write to file
-            str1 = '[Video]:%s %s %s\n' % (item[0], item[1], item[7])
-            for i in item[2:7]:
-                str1 = str1 + '%s ' % (i)
-            str1 = str1 + '\n'
-            #page data
-            str2 = u'[Page]:\n'
-            if videoPageData and len(videoPageData[0]) == 0 and len(videoPageData[1]) == 0:
-                str2 = str2 + u'番剧\n' + item[3]+ '\n' + item[6] + '\n';
-                str2 = str2 + u'[Division]:' + u'/ 主页 / 番剧 / 番剧\n'
-            elif videoPageData:
-                for i in videoPageData[0]:
-                    str2 = str2 + '%s\n' % (i)
-                str2 = str2 + '[Division]:'
-                for i in videoPageData[1]:
-                    str2 = str2 + '%s ' % (i)
-                str2 = str2 + '\n'
-            else:
-                print u'cannot get video page data.'
-            #tags format
-            str3 = '[Tags]\n'
-            if len(videoTags) > 0:            
-                for i in videoTags:
-                    str3 = str3 + '%s %s %s %s\n' % (i[0], i[1], i[2], i[3])
-            else:
-                print 'cannot get video tags.'
-            s = str1 + str2 + str3
-            fp.write(s)
 
     except Exception , ex:
         print ex
     finally:
         conn2.close()
         conn1.close()
-        fp.close()
 
 def processVideoData(dbconn, index):
     onlinePage = getOnlinePage()
@@ -423,7 +393,6 @@ def processLiveList(dbconn, index):
     if len(liveList) > 0:
         conn = None
         try:
-            fp = codecs.open('text.txt', 'a+', 'utf-8')
             conn = httplib.HTTPConnection('live.bilibili.com')
             ret = None
 
@@ -442,19 +411,6 @@ def processLiveList(dbconn, index):
                 if ret == None:
                     print 'invalid LivePage return value'
                     continue
-                #write to file
-                str1 = '[Live]:%s %s %s\n' % (item[0], item[1], item[7])    
-                for i in item:
-                    str1 = str1 + '%s ' % i
-                str1 = str1 + '\n'
-                if len(ret[0]) == 2:
-                    str1 = str1 + '%s\n%s' % (ret[0][0], ret[0][1])
-                str1 = str1 + '\n'
-                for i in ret[1]:
-                    str1 = str1 + '%s ' % i
-                str1 = str1 + '\n'
-                fp.write(str1)
-            fp.close()
         except Exception, ex:
             print ex
         finally:
@@ -499,11 +455,9 @@ def clearTable():
     dbconn.close()
 
 def mainLoop():
-    #clear data
-    fp = codecs.open('text.txt', 'w+', 'utf-8')
-    fp.close()
     #start indexer
     while True:
+        print '---------------------------------------'
         #get database
         dbconn = sqlite3.connect('data.db')
         timeStamp = createTimeStamp()
@@ -513,11 +467,8 @@ def mainLoop():
         data = getMainPage()
         MainPageData = parseMainPage(data[1])
         if MainPageData:
-            fp = codecs.open('text.txt', 'a+', 'utf-8')
             temp = '[TimeStamp]:%s\n[Index]:%d\n[Online]:%s %s\n' % (timeStamp, index, MainPageData[0], MainPageData[1])
             print temp
-            fp.write(temp)
-            fp.close()
             #write to db
             writeMainTable(dbconn, index, timeStamp, MainPageData[0], MainPageData[1])            
         else:
@@ -530,5 +481,5 @@ def mainLoop():
         print '[Indexer]: done.'
         dbconn.close()
 
-        break
+        #break
         time.sleep(300)

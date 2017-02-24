@@ -9,18 +9,15 @@ import os
 import sqlite3
     
 if __name__ == '__main__':
-    print 'program start.'    
+    print '[program start]'    
 else:
     print 'program is not a module.'
     exit()
 
-#Transmission.clearTable()
-Transmission.mainLoop()
-
-#cx = sqlite3.connect('data.db')
-#cu = cx.cursor()
-#cu.execute("insert into test values(7,'%s')" % u'\\asdf')
-#print cu.fetchall()
-#cx.commit()
-#cu.close()
-#cx.close()
+while True:
+    try:
+        Transmission.mainLoop()
+    except Exception, ex:
+        print ex
+    print 'program crashed.program will restart in 300sec.'
+    time.sleep(300)
