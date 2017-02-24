@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="clearDataBase.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Indexer4py.py" />
     <Compile Include="Transmission.py">
       <SubType>Code</SubType>

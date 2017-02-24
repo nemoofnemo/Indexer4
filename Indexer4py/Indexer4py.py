@@ -14,12 +14,13 @@ else:
     print 'program is not a module.'
     exit()
 
-#Transmission.mainLoop()
+#Transmission.clearTable()
+Transmission.mainLoop()
 
-cx = sqlite3.connect('data.db')
-cu = cx.cursor()
-cu.execute("insert into test values(7,'%s')" % u'\\asdf')
-print cu.fetchall()
-cx.commit()
-cu.close()
-cx.close()
+#cx = sqlite3.connect('data.db')
+#cu = cx.cursor()
+#cu.execute("insert into test values(7,'%s')" % u'\\asdf')
+#print cu.fetchall()
+#cx.commit()
+#cu.close()
+#cx.close()

@@ -230,6 +230,7 @@ def writeVideoDataToDB(dbconn, index, listitem, videoPageData, videoTags):
         except Exception , ex:
             #do nothing
             1
+        dbconn.commit()
     except Exception , ex:
         print ex
     finally:
@@ -360,7 +361,7 @@ def writeLiveDataToDB(dbconn, index, listitem, livePageData):
         cu = dbconn.cursor()
         
         #warning: liveid = max videoid + 1
-        cu.execute('select max(video_id) from video_table')
+        cu.execute('select max(live_id) from live_table')
         live_id = 1
         ret = cu.fetchone()[0]
         if ret:
@@ -378,13 +379,13 @@ def writeLiveDataToDB(dbconn, index, listitem, livePageData):
         if ret:
             keyword_id = ret + 1
 
-        keyword_index = live_id
-        live_tag_index = live_id
+        keyword_index = keyword_id
+        live_tag_index = live_tag_id
 
         keywords = []
 
         #live table
-        cu.execute("insert into live_table values(%d,%d,%s,%s,%s,'%s','%s',%s,%s,'%s',%s,'%s',%d,%d)" % (live_id, index, listitem[0], listitem[1], listitem[2], listitem[3], listitem[4], listitem[5], listitem[6], listitem[7], listitem[8], listitem[9], keyword_index, live_tag_index))
+        cu.execute("insert into live_table values(%d,%d,%s,%s,%s,'%s','%s',%s,%s,'%s','%s','%s',%d,%d)" % (live_id, index, listitem[0], listitem[1], listitem[2], listitem[3], listitem[4], listitem[5], listitem[6], listitem[7], listitem[8], listitem[9], keyword_index, live_tag_index))
 
         #tags
         try:
@@ -409,7 +410,7 @@ def writeLiveDataToDB(dbconn, index, listitem, livePageData):
         except Exception , ex:
             #do nothing
             1
-
+        dbconn.commit()
     except Exception , ex:
         print ex
     finally:
@@ -469,12 +470,33 @@ def writeMainTable(dbconn, index, timeStamp, playCount, onlineCount):
     try:
         cu = dbconn.cursor()
         cu.execute("insert into main_table values(%d,'%s',%s,%s)" % (index, timeStamp, playCount, onlineCount))
-        #dbconn.commit()
+        dbconn.commit()
     except Exception , ex:
         print ex
     finally:
         if cu:
             cu.close()
+
+def clearTable():
+    dbconn = sqlite3.connect('data.db')
+    cu = dbconn.cursor()
+    cu.execute('DELETE FROM main_table')
+    cu.execute('VACUUM')
+    cu.execute('DELETE FROM video_table')
+    cu.execute('VACUUM')
+    cu.execute('DELETE FROM keyword_table')
+    cu.execute('VACUUM')
+    cu.execute('DELETE FROM tag_table')
+    cu.execute('VACUUM')
+    cu.execute('DELETE FROM live_table')
+    cu.execute('VACUUM')
+    cu.execute('DELETE FROM live_tag_table')
+    cu.execute('VACUUM')
+    cu.execute('DELETE FROM division_table')
+    cu.execute('VACUUM')
+    dbconn.commit()
+    cu.close()
+    dbconn.close()
 
 def mainLoop():
     #clear data
