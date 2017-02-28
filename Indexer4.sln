@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Indexer4", "Indexer4\Indexe
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Indexer4py", "Indexer4py\Indexer4py.pyproj", "{5A203874-607A-4EBA-BD15-E6CC161AD8FE}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FunctionTest", "FunctionTest\FunctionTest.pyproj", "{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,12 @@ Global
 		{5A203874-607A-4EBA-BD15-E6CC161AD8FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A203874-607A-4EBA-BD15-E6CC161AD8FE}.Release|x64.ActiveCfg = Release|Any CPU
 		{5A203874-607A-4EBA-BD15-E6CC161AD8FE}.Release|x86.ActiveCfg = Release|Any CPU
+		{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}.Release|x64.ActiveCfg = Release|Any CPU
+		{513E4E5F-BFA3-497F-96F1-ACF8CBA1D271}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
