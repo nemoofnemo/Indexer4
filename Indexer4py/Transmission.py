@@ -186,7 +186,7 @@ def writeVideoDataToDB(dbconn, index, listitem, videoPageData, videoTags):
             desc = videoPageData[0][1]
         else:
             print 'invalid video pagedata in writeVideoDataToDB:1'
-            desc = u''        
+            desc = u' '        
 
         #video table
         cu.execute("insert into video_table values(%d,%d,'%s','%s','%s','%s',%s,%s,'%s',%s,%d,'%s',%d)" % (video_id, index, listitem[0],listitem[1],listitem[2],listitem[3],listitem[4],listitem[5],listitem[6],listitem[7],keyword_index,desc,division_index))
