@@ -10,11 +10,11 @@ import codecs
 import json
 import sqlite3
 
-if __name__ == '__main__':
-    print 'transmission module.'
-    exit()
-else:
-    print 'load transmission module.'
+#if __name__ == '__main__':
+#    print 'transmission module.'
+#    exit()
+#else:
+#    print '[load transmission module]'
 
 def gzdecode(data) :  
     compressedstream = StringIO.StringIO(data)  
@@ -189,8 +189,11 @@ def writeVideoDataToDB(dbconn, index, listitem, videoPageData, videoTags):
             desc = u' '        
 
         #video table
+        play_count_str = '0'
+        if listitem[4] != '--':
+            play_count_str = listitem[4]
         if videoPageData:
-            cu.execute("insert into video_table values(%d,%d,'%s','%s','%s','%s',%s,%s,'%s',%s,%d,'%s',%d)" % (video_id, index, listitem[0],listitem[1],listitem[2],listitem[3],listitem[4],listitem[5],listitem[6],listitem[7],keyword_index,desc,division_index))
+            cu.execute("insert into video_table values(%d,%d,'%s','%s','%s','%s',%s,%s,'%s',%s,%d,'%s',%d)" % (video_id, index, listitem[0],listitem[1],listitem[2],listitem[3],play_count_str,listitem[5],listitem[6],listitem[7],keyword_index,desc,division_index))
         
         #tags
         try:
@@ -331,7 +334,6 @@ def writeLiveDataToDB(dbconn, index, listitem, livePageData):
     try:
         cu = dbconn.cursor()
         
-        #warning: liveid = max videoid + 1
         cu.execute('select max(live_id) from live_table')
         live_id = 1
         ret = cu.fetchone()[0]
@@ -455,22 +457,27 @@ def clearTable():
     cu.close()
     dbconn.close()
 
+#monitor value
+TICK_COUNT = 0
+
 def mainLoop():
     #start indexer
+    global TICK_COUNT
     socket.setdefaulttimeout(5)
-
-    while True:
+    
+    while True:                
         print '---------------------------------------'
-        #get database
-        dbconn = sqlite3.connect('data.db')
+        #get database        
         timeStamp = createTimeStamp()
         index = int(time.time())
-
+        TICK_COUNT = index
+        dbconn = sqlite3.connect('data.db')
+        
         print '[%s]: indexer start.Index = %d' % (timeStamp, index)
         data = getMainPage()
         MainPageData = parseMainPage(data[1])
         if MainPageData:
-            temp = '[TimeStamp]:%s\n[Index]:%d\n[Online]:%s %s\n' % (timeStamp, index, MainPageData[0], MainPageData[1])
+            temp = '[TimeStamp]:%s\n[Index]:%d\n[Online]:%s %s' % (timeStamp, index, MainPageData[0], MainPageData[1])
             print temp
             #write to db
             writeMainTable(dbconn, index, timeStamp, MainPageData[0], MainPageData[1])            
@@ -481,8 +488,8 @@ def mainLoop():
         processVideoData(dbconn, index)
         processLiveList(dbconn, index)
         dbconn.commit()
-        print '[Indexer]: done.'
         dbconn.close()
+        print '[Indexer]: %s -> done.' % createTimeStamp()
 
         #break
         time.sleep(300)
