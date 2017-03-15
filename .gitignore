@@ -240,3 +240,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/data/data201703150922.db
+/FunctionTest/data.db
+/FunctionTest/data20170228.db
