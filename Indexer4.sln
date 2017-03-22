@@ -11,6 +11,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FunctionTest", "FunctionTes
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Processor", "Processor\Processor.pyproj", "{89617D97-CB49-4903-9E89-7DF8EEB0B3B7}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "SQLiteRPC", "SQLiteRPC\SQLiteRPC.pyproj", "{4189EE9F-6678-470A-AFA4-2CC87BB57C50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,12 @@ Global
 		{89617D97-CB49-4903-9E89-7DF8EEB0B3B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89617D97-CB49-4903-9E89-7DF8EEB0B3B7}.Release|x64.ActiveCfg = Release|Any CPU
 		{89617D97-CB49-4903-9E89-7DF8EEB0B3B7}.Release|x86.ActiveCfg = Release|Any CPU
+		{4189EE9F-6678-470A-AFA4-2CC87BB57C50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4189EE9F-6678-470A-AFA4-2CC87BB57C50}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4189EE9F-6678-470A-AFA4-2CC87BB57C50}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4189EE9F-6678-470A-AFA4-2CC87BB57C50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4189EE9F-6678-470A-AFA4-2CC87BB57C50}.Release|x64.ActiveCfg = Release|Any CPU
+		{4189EE9F-6678-470A-AFA4-2CC87BB57C50}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

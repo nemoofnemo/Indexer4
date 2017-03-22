@@ -6,21 +6,20 @@ import numpy as np
 #import matplotlib as mpl
 import matplotlib.pyplot as plt
 #import seaborn as sns
+import pickle
+import socket
 
-#dbconn = sqlite3.connect('data20170228.db')
-#cu = dbconn.cursor()
-#cu.execute('select * from main_table')
-#data = cu.fetchall()
-#dbconn.commit()
-#dbconn.close()
+#a = [1,2,3]
+#x = pickle.dumps(a)
+#print x
+#y = pickle.loads(x)
+#print y
 
-#a = [item[2] for item in data]
-#plt.plot(a)
-#b = [item[3] for item in data]
-#plt.plot(b)
-#plt.show()
+def worker_thread():
+    1
 
-b = ['asd','asdf']
-c = [1,2]
-plt.plot(b,c)
-plt.show()
+def main():
+    address = ('127.0.0.1', 31500)  
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # s = socket.socket()  
+    s.bind(address)  
+    s.listen(5) 
