@@ -9,12 +9,28 @@ import matplotlib.pyplot as plt
 import pickle
 import socket
 import time
+import thread
 
-def worker_thread():
-    1
+def createTimeStamp():
+    now = int(time.time())
+    temp = time.localtime(now)
+    timeStamp = time.strftime("%Y/%m/%d %H:%M:%S", temp)
+    return timeStamp
+
+def worker_thread(s, addr):
+    try:
+        1
+    except Exception, ex:
+        print ex
+    finally:
+        if s:
+            s.close()
+
 
 def main():
+    print 'sqlite start.'
     while True:
+        svr_socket = None
         try:
             socket.setdefaulttimeout(5)
             address = ('127.0.0.1', 6001)  
@@ -23,9 +39,15 @@ def main():
             svr_socket.listen(5) 
     
             while True:
-                ss, addr = s.accept()  
-                print 'connection:',addr
+                client_socket, client_addr = s.accept()  
+                print createTimeStamp()
+                print 'connection:',client_addr
+                thread.start_new_thread(worker_thread,(client_socket, client_addr))
 
         except Exception ,ex:
             print ex
+            if svr_socket:
+                svr_socket.close()
+        finally:
+            print 'server restart.'
     
